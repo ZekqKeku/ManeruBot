@@ -1,7 +1,7 @@
 {
   "bot": {
-  "token": "",
-  "app_id": ""
+    "token": "",
+    "app_id": ""
 },
   "discord": {
     "bot_admin_id": [
