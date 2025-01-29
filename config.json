@@ -1,0 +1,13 @@
+{
+  "bot": {
+  "token": "",
+  "app_id": ""
+},
+  "discord": {
+    "bot_admin_id": [
+      123,
+      456
+    ],
+    "guild_id": ""
+  }
+}
