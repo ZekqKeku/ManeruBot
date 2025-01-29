@@ -10,6 +10,7 @@ def main():
     config = ManeruUtils.ConfigReader('config.json')
     super_users = config.get_discord_bot_admin_id()
 
+
     @client.event
     async def on_ready():
         print("Client is ready.")
