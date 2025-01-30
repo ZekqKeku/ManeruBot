@@ -1,5 +1,7 @@
 import os
 import json
+import datetime
+import calendar
 
 
 class ConfigReader:
@@ -26,3 +28,25 @@ class ConfigReader:
     def get_discord_guild_id(self):
         return self.config_data.get("discord", {}).get("guild_id", "")
 
+
+class DateTools:
+    @staticmethod
+    def short_year(year: int):
+        current_year = str(datetime.datetime.now().year)
+        year_str = str(year)
+
+        if len(year_str) == 3:
+            return int(current_year[:1] + year_str)
+        elif len(year_str) == 2:
+            return int(current_year[:2] + year_str)
+        elif len(year_str) == 1:
+            return int(current_year[:3] + year_str)
+        else:
+            return int(current_year)
+
+    @staticmethod
+    def days_in_month():
+        current_year = datetime.datetime.now().year
+        current_month = datetime.datetime.now().month
+
+        return calendar.monthrange(current_year, current_month)[1]
