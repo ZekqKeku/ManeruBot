@@ -8,7 +8,7 @@ from utils import ManeruUtils, ManeruDatabase
 
 def main():
     client = commands.Bot()
-    config = ManeruUtils.ConfigReader('config.json')
+    config = ManeruUtils.ConfigReader('dev_config.json')
     super_users = config.get_discord_bot_admin_id()
 
     @client.event
@@ -27,14 +27,13 @@ def main():
         if 'aftonek' in str(message.content).lower():
             if random.uniform(0, 100) <= 0.01:
                 await message.channel.send("Szablozębnik?")
-                await message.channel.send(gif[random.randint(0, len(gif) - 1)])
+                await message.channel.send(gif[random.randint(0, len(gif)-1)])
 
     @client.slash_command(description="Ping - pong!")
     @application_checks.has_permissions(administrator=True)
     async def ping(interaction: Interaction):
         await interaction.response.send_message("Pong!", ephemeral=True)
 
-    # @todo Automation of limits realitivie to the current date
     @client.slash_command(name="proposal", description="Send proposal of meeting date")
     @application_checks.has_permissions(administrator=True)
     async def proposal(interaction: Interaction,
@@ -70,21 +69,39 @@ def main():
                                                required=False,
                                                min_value=datetime.datetime.now().year,
                                                max_value=datetime.datetime.now().year+50)):
+        message = await interaction.response.send_message("Thinking...", ephemeral=True)
+
         date = datetime.datetime.now()
         if month == None: month = date.month
         if year == None: year = date.year
 
-        if ManeruUtils.DateTools.is_date_in_past(year, month, day):
-            print("This date has passed")
+        if day > ManeruUtils.DateTools.get_days_in_month(year, month):
+            await message.edit(content="Day value is invalid", delete_after=5)
+            return -1
 
+        if ManeruUtils.DateTools.is_date_in_past(year, month, day):
+            await message.edit(content="This date has passed", delete_after=5)
+            return -1
+
+        embed = nextcord.Embed(
+            title=title,
+            description=description,
+            color=0xFFFFFF
+        )
+        embed.add_field(name="**Date**",
+                        value=f"{day}.{month}.{year}",
+                        inline=False)
+        embed.set_footer(text=f"Requested by {str(interaction.user).capitalize()}")
 
         test_payload = f'''\n
-        **Date:** {day} - {month} - {year}
-        **Title:** {title}
-        **Description:** {description}
-        **Pass:** {ManeruUtils.DateTools.is_date_in_past(year, month, day)}
+**Date:** {day} - {month} - {year}
+**Title:** {title}
+**Description:** {description}
+**Pass:** {ManeruUtils.DateTools.is_date_in_past(year, month, day)}
         '''
-        await interaction.response.send_message(test_payload, ephemeral=True)
+
+        await message.edit(content=test_payload, embed=embed)
+        return 0
 
     client.run(config.get_bot_token())
 
