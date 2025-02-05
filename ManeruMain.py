@@ -11,7 +11,6 @@ def main():
     config = ManeruUtils.ConfigReader('config.json')
     super_users = config.get_discord_bot_admin_id()
 
-
     @client.event
     async def on_ready():
         print("Client is ready.")
@@ -35,7 +34,6 @@ def main():
     async def ping(interaction: Interaction):
         await interaction.response.send_message("Pong!", ephemeral=True)
 
-
     # @todo Automation of limits realitivie to the current date
     @client.slash_command(name="proposal", description="Send proposal of meeting date")
     @application_checks.has_permissions(administrator=True)
@@ -53,6 +51,7 @@ def main():
                                               max_value=31),
                        month: int = SlashOption(name="month",
                                                 description="Month (if not selected, set current month)",
+                                                required=False,
                                                 choices={
                                                   "January": 1,
                                                   "February": 2,
@@ -66,21 +65,26 @@ def main():
                                                   "October": 10,
                                                   "November": 11,
                                                   "December": 12}),
-                       # month: int = SlashOption(name="month",
-                       #                          description="Month (if not selected, set current month)",
-                       #                          min_value=1,
-                       #                          max_value=12),
                        year: int = SlashOption(name="year",
                                                description="Year (if not selected, set current year)",
-                                               min_value=2025,
-                                               max_value=2125)):
+                                               required=False,
+                                               min_value=datetime.datetime.now().year,
+                                               max_value=datetime.datetime.now().year+50)):
+        date = datetime.datetime.now()
+        if month == None: month = date.month
+        if year == None: year = date.year
+
+        if ManeruUtils.DateTools.is_date_in_past(year, month, day):
+            print("This date has passed")
+
+
         test_payload = f'''\n
         **Date:** {day} - {month} - {year}
         **Title:** {title}
         **Description:** {description}
+        **Pass:** {ManeruUtils.DateTools.is_date_in_past(year, month, day)}
         '''
         await interaction.response.send_message(test_payload, ephemeral=True)
-
 
     client.run(config.get_bot_token())
 

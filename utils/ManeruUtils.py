@@ -45,8 +45,12 @@ class DateTools:
             return int(current_year)
 
     @staticmethod
-    def days_in_month():
-        current_year = datetime.datetime.now().year
-        current_month = datetime.datetime.now().month
+    def is_date_in_past(year, month, day):
+        selected_date = datetime.datetime(year, month, day).date()
+        current_date = datetime.datetime.today().date()
 
-        return calendar.monthrange(current_year, current_month)[1]
+        return selected_date < current_date
+
+    @staticmethod
+    def get_days_in_month(year, month):
+        return calendar.monthrange(year, month)[1]
