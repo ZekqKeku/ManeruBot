@@ -8,7 +8,7 @@ from utils import ManeruUtils, ManeruDatabase
 
 def main():
     client = commands.Bot()
-    config = ManeruUtils.ConfigReader('dev_config.json')
+    config = ManeruUtils.ConfigReader('config.json')
     super_users = config.get_discord_bot_admin_id()
 
     @client.event
@@ -43,6 +43,16 @@ def main():
                        description: str = SlashOption(name="description",
                                                       description="Description",
                                                       required=True),
+                       hour: int = SlashOption(name="hour",
+                                               description="Hour",
+                                               required=True,
+                                               min_value=0,
+                                               max_value=23),
+                       minute: int = SlashOption(name="minute",
+                                                 description="Minute",
+                                                 required=True,
+                                                 min_value=0,
+                                                 max_value=59),
                        day: int = SlashOption(name="day",
                                               description="Day",
                                               required=True,
@@ -67,40 +77,57 @@ def main():
                        year: int = SlashOption(name="year",
                                                description="Year (if not selected, set current year)",
                                                required=False,
-                                               min_value=datetime.datetime.now().year,
+                                               min_value=0,
                                                max_value=datetime.datetime.now().year+50)):
         message = await interaction.response.send_message("Thinking...", ephemeral=True)
+
+        months= {
+            1: "January",
+            2: "February",
+            3: "March",
+            4: "April",
+            5: "May",
+            6: "June",
+            7: "July",
+            8: "August",
+            9: "September",
+            10: "October",
+            11: "November",
+            12: "December"
+        }
 
         date = datetime.datetime.now()
         if month == None: month = date.month
         if year == None: year = date.year
+        else: year = ManeruUtils.DateTools.short_year(year)
 
         if day > ManeruUtils.DateTools.get_days_in_month(year, month):
             await message.edit(content="Day value is invalid", delete_after=5)
             return -1
 
-        if ManeruUtils.DateTools.is_date_in_past(year, month, day):
+        if ManeruUtils.DateTools.is_date_in_past(year, month, day, hour, minute):
             await message.edit(content="This date has passed", delete_after=5)
             return -1
 
         embed = nextcord.Embed(
-            title=title,
-            description=description,
-            color=0xFFFFFF
+            title=f"**{title}**",
+            description=f"_{description}_",
+            color=0xFFFFFF,
+            timestamp=datetime.datetime.now(),
         )
         embed.add_field(name="**Date**",
-                        value=f"{day}.{month}.{year}",
-                        inline=False)
+                        value=f"_{ManeruUtils.DateTools.short_number(day)} {months[month]} {year}_",
+                        inline=True)
+        str_hour = ManeruUtils.DateTools.short_number(hour)
+        str_minute = ManeruUtils.DateTools.short_number(minute)
+        embed.add_field(name="**Time**",
+                        value=f"_{str_hour}:{str_minute}_",
+                        inline=True)
         embed.set_footer(text=f"Requested by {str(interaction.user).capitalize()}")
+        embed.set_thumbnail(url="attachment://calendar.png")
+        file = nextcord.File("static/calendar.png", filename="calendar.png")
 
-        test_payload = f'''\n
-**Date:** {day} - {month} - {year}
-**Title:** {title}
-**Description:** {description}
-**Pass:** {ManeruUtils.DateTools.is_date_in_past(year, month, day)}
-        '''
-
-        await message.edit(content=test_payload, embed=embed)
+        await message.edit(content="", embed=embed, file=file)
         return 0
 
     client.run(config.get_bot_token())

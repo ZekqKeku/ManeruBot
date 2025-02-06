@@ -45,9 +45,14 @@ class DateTools:
             return int(current_year)
 
     @staticmethod
-    def is_date_in_past(year, month, day):
-        selected_date = datetime.datetime(year, month, day).date()
-        current_date = datetime.datetime.today().date()
+    def short_number(num: int):
+        if num > 9: return str(num)
+        else: return f"0{num}"
+
+    @staticmethod
+    def is_date_in_past(year, month, day, hour, minute):
+        selected_date = datetime.datetime(year, month, day, hour, minute, 0)
+        current_date = datetime.datetime.today()
 
         return selected_date < current_date
 
